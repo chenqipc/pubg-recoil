@@ -1,17 +1,15 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/otiai10/gosseract/v2"
+	"github.com/zsmartex/pkg/v2/log"
 	"image"
 	"image/png"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
-	"syscall"
-
-	"github.com/google/uuid"
-	"github.com/zsmartex/pkg/v2/log"
 )
 
 func nuke(f *os.File) {
@@ -22,28 +20,27 @@ func nuke(f *os.File) {
 	}
 }
 
-func GetTextFromImage(img image.Image, options ...string) (string, error) {
-	tempFile, err := createTempFile()
+// GetTextFromImage 使用 gosseract 进行 OCR 识别，直接从内存中的图像提取文本
+func GetTextFromImage(img image.Image) (string, error) {
+	// 创建一个新的 Tesseract 客户端
+	client := gosseract.NewClient()
+	defer client.Close()
+
+	// 将 img 转换为 PNG 格式的字节数组
+	buf := new(bytes.Buffer)
+	if err := png.Encode(buf, img); err != nil {
+		return "", fmt.Errorf("failed to encode image: %v", err)
+	}
+
+	// 将图像字节数据传递给 Tesseract 客户端
+	client.SetImageFromBytes(buf.Bytes())
+	client.SetPageSegMode(gosseract.PSM_SINGLE_LINE) // 设置 PSM 模式，例如单个文本块
+	// 执行 OCR 并返回结果
+	text, err := client.Text()
 	if err != nil {
-		return "", fmt.Errorf("create temp file %v", err)
+		return "", fmt.Errorf("OCR failed: %v", err)
 	}
-	defer nuke(tempFile)
-
-	if err = png.Encode(tempFile, img); err != nil {
-		return "", fmt.Errorf("save temp image %v", err)
-	}
-
-	cmd := exec.Command("tesseract", "--psm", "6", "--oem", "3", "./"+strings.ReplaceAll(tempFile.Name(), "\\", "/"), "stdout")
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
-	out, err := cmd.Output()
-	if err != nil {
-		// fmt.Println(fmt.Sprint(err) + ": " + stderr.String()) // To trace error
-		return "", err
-	}
-
-	result := strings.TrimSpace(string(out))
-
-	return result, nil
+	return text, nil
 }
 
 func createTempFile() (*os.File, error) {

@@ -8,6 +8,7 @@ require (
 	github.com/kbinani/screenshot v0.0.0-20230812210009-b87d31814237
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/oliamb/cutter v0.2.2
+	github.com/otiai10/gosseract/v2 v2.4.1
 	github.com/robotn/gohook v0.31.3
 	github.com/zsmartex/pkg/v2 v2.1.19
 	gocv.io/x/gocv v0.35.0
