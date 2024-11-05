@@ -10,7 +10,7 @@ require (
 	github.com/oliamb/cutter v0.2.2
 	github.com/robotn/gohook v0.31.3
 	github.com/zsmartex/pkg/v2 v2.1.19
-	gocv.io/x/gocv v0.35.0
+	gocv.io/x/gocv v0.39.0
 	golang.org/x/sys v0.11.0
 )
 

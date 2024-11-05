@@ -1,7 +1,10 @@
 package game
 
 import (
+	"fmt"
 	"image"
+	"image/png"
+	"os"
 	"time"
 
 	"github.com/huuhait/pubg-recoil/pkg/gui"
@@ -30,19 +33,21 @@ func NewGame(GUI *gui.GUI) *Game {
 }
 
 func (g *Game) ScanStandState() {
-	for {
+	// 默认设置为站立
+	g.playerStats.SetStandState(stats.StandStateStand)
+	g.GUI.SetStandState(stats.StandStateStand)
+	/*for {
 		if !g.scanning && g.playerStats.ReadyRecoil() {
 			state, err := g.getStandState()
 			if err != nil {
 				log.Errorf("failed to scan stand state: %v", err)
 				continue
 			}
-
 			g.playerStats.SetStandState(state)
 			g.GUI.SetStandState(state)
 		}
 		time.Sleep(50 * time.Millisecond)
-	}
+	}*/
 }
 
 func (g *Game) ScanBullets() {
@@ -76,6 +81,21 @@ func (g *Game) ScanInventory() {
 			continue
 		}
 
+		// 创建文件
+		file, err := os.Create("screenshot.png")
+		if err != nil {
+			fmt.Println("Error creating file:", err)
+			return
+		}
+		defer file.Close()
+
+		// 将图像编码为PNG并写入文件
+		err = png.Encode(file, screenshot)
+		if err != nil {
+			fmt.Println("Error encoding PNG:", err)
+			return
+		}
+
 		isInventoryOpening, err := g.isInventoryOpening(screenshot)
 		if err != nil {
 			log.Errorf("failed to scan inventory: %v", err)
@@ -84,9 +104,11 @@ func (g *Game) ScanInventory() {
 		}
 
 		if !isInventoryOpening {
+			log.Info("没有匹配到")
 			g.scanning = false
 			continue
 		}
+		log.Info("匹配到", isInventoryOpening)
 
 		weapons, err := g.getWeapons(screenshot)
 		if err != nil {
@@ -108,6 +130,7 @@ func (g *Game) ScanInventory() {
 
 func (g *Game) DeviceHook() {
 	hook.Register(hook.KeyDown, []string{"tab"}, func(e hook.Event) {
+		log.Info("开始扫描")
 		g.scanning = true
 	})
 
@@ -121,6 +144,40 @@ func (g *Game) DeviceHook() {
 		g.playerStats.SetActiveWeapon(2)
 		currentActiveWeapon, _ := g.playerStats.GetActiveWeapon()
 		g.GUI.SetActiveWeapon(currentActiveWeapon)
+	})
+
+	hook.Register(hook.KeyDown, []string{"c"}, func(e hook.Event) {
+		log.Info("c")
+		cStats := g.playerStats.GetStandState()
+		log.Info("原状态", cStats)
+		newStats := stats.StandStateSit
+		if cStats == stats.StandStateStand || cStats == stats.StandStateLie {
+			newStats = stats.StandStateSit
+			log.Info("新状态", newStats)
+		} else if cStats == stats.StandStateSit {
+			newStats = stats.StandStateStand
+		}
+		g.playerStats.SetStandState(newStats)
+		g.GUI.SetStandState(newStats)
+	})
+
+	hook.Register(hook.KeyDown, []string{"z"}, func(e hook.Event) {
+		log.Info("z")
+		cStats := g.playerStats.GetStandState()
+		var newStats stats.StandState
+		if cStats == stats.StandStateStand || cStats == stats.StandStateSit {
+			newStats = stats.StandStateLie
+		} else if cStats == stats.StandStateLie {
+			newStats = stats.StandStateStand
+		}
+		g.playerStats.SetStandState(newStats)
+		//g.GUI.SetStandState(newStats)
+	})
+
+	hook.Register(hook.KeyDown, []string{"space"}, func(e hook.Event) {
+		log.Info("空格")
+		g.playerStats.SetStandState(stats.StandStateStand)
+		//g.GUI.SetStandState(stats.StandStateStand)
 	})
 
 	hook.Register(hook.MouseHold, []string{}, func(e hook.Event) {
@@ -154,7 +211,7 @@ func (g *Game) DeviceHook() {
 func (g *Game) Start() {
 	go g.ScanInventory()
 	go g.ScanBullets()
-	go g.ScanStandState()
+	g.ScanStandState()
 	go g.recoil.Start()
 	go g.DeviceHook()
 }

@@ -19,3 +19,8 @@ var GripAssets = map[weapon.Grip][]string{
 		"assets/attachments/vertical/3.jpg",
 	},
 }
+
+var InventoryAssets = [...]string{
+	"assets/inventory/kucun1.png",
+	"assets/inventory/kucun2.png",
+}

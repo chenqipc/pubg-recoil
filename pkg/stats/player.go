@@ -2,6 +2,7 @@ package stats
 
 import (
 	"github.com/huuhait/pubg-recoil/pkg/weapon"
+	"github.com/zsmartex/pkg/v2/log"
 )
 
 type StandState string
@@ -100,6 +101,7 @@ func (p *PlayerStats) GetStandState() StandState {
 }
 
 func (p *PlayerStats) SetStandState(state StandState) {
+	log.Info("SetStandState", state)
 	p.standState = state
 }
 

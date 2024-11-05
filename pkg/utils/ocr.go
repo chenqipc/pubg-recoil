@@ -22,18 +22,19 @@ func nuke(f *os.File) {
 	}
 }
 
-func GetTextFromImage(img image.Image, options ...string) (string, error) {
+func GetTextFromImage(img image.Image, en string) (string, error) {
 	tempFile, err := createTempFile()
 	if err != nil {
 		return "", fmt.Errorf("create temp file %v", err)
 	}
 	defer nuke(tempFile)
 
+	log.Info("OCR开始")
 	if err = png.Encode(tempFile, img); err != nil {
 		return "", fmt.Errorf("save temp image %v", err)
 	}
 
-	cmd := exec.Command("tesseract", "--psm", "6", "--oem", "3", "./"+strings.ReplaceAll(tempFile.Name(), "\\", "/"), "stdout")
+	cmd := exec.Command("tesseract", "--psm", "6", "--oem", "3", "-l", en, "./"+strings.ReplaceAll(tempFile.Name(), "\\", "/"), "stdout")
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	out, err := cmd.Output()
 	if err != nil {
@@ -42,6 +43,7 @@ func GetTextFromImage(img image.Image, options ...string) (string, error) {
 	}
 
 	result := strings.TrimSpace(string(out))
+	log.Info("OCR结束:", result)
 
 	return result, nil
 }

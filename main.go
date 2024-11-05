@@ -12,6 +12,7 @@ func main() {
 	gui := gui.NewGUI()
 	game := game.NewGame(gui)
 
+	log.Info("开始")
 	game.Start()
 	gui.ShowAndRun()
 

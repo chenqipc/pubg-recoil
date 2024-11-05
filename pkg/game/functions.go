@@ -38,12 +38,12 @@ func (g *Game) isInventoryOpening(screenshot image.Image) (bool, error) {
 		return false, err
 	}
 
-	result, err := utils.GetTextFromImage(img)
+	result, err := utils.GetTextFromImage(img, "chi_sim")
 	if err != nil {
 		return false, err
 	}
 
-	return result == "INVENTORY", nil
+	return strings.HasPrefix(result, "库存") || strings.HasPrefix(result, "补给箱"), nil
 }
 
 func (*Game) isBulletsAvailable() (bool, error) {
@@ -58,7 +58,7 @@ func (*Game) isBulletsAvailable() (bool, error) {
 
 func (g *Game) getWeaponName(img image.Image) (string, error) {
 	var name string
-	text, err := utils.GetTextFromImage(img)
+	text, err := utils.GetTextFromImage(img, "eng")
 	if err != nil {
 		return "", err
 	}

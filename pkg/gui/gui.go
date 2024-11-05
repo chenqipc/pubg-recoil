@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"github.com/zsmartex/pkg/v2/log"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -73,5 +74,7 @@ func (g *GUI) SetActiveWeapon(weapon *weapon.Weapon) {
 }
 
 func (g *GUI) SetStandState(state stats.StandState) {
+	log.Info("11111111111")
+	g.standStateLabel.SetText("")
 	g.standStateLabel.SetText(fmt.Sprintf("Stand State: %s", state))
 }

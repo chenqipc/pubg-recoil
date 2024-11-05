@@ -12,6 +12,6 @@ var Attachments = map[string]image.Rectangle{
 }
 
 var WeaponName = image.Rect(62, 10, 300, 55)
-var Inventory = image.Rect(489, 70, 666, 124)
+var Inventory = image.Rect(490, 73, 695, 118)
 var Bullets = image.Rect(1250, 1315, 1308, 1365)
 var Stand = image.Rect(930, 1299, 995, 1370)
