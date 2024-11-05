@@ -3,6 +3,14 @@ package weapon
 type RecoilOffset struct {
 	Interval     int
 	DelayIndexes map[int]float64
+	DelayArr     []float32
+}
+
+var RecoilOffsetNew = map[string]RecoilOffset{
+	"M416": {
+		Interval: 10,
+		DelayArr: []float32{31.96, 15.51, 17.86, 22.09, 22.56, 25.85, 24.44, 26.79, 25.85, 29.14, 27.26, 28.67, 23.5, 23.5, 23.03, 26.79, 32.43, 30.08, 34.31, 34.31, 34.31, 34.31, 34.31, 34.31},
+	},
 }
 
 var RecoilOffsets = map[string]RecoilOffset{

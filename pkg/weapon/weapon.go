@@ -12,6 +12,10 @@ func NewWeapon(name string) *Weapon {
 	}
 }
 
+func (w *Weapon) GetOffsetNew() RecoilOffset {
+	return RecoilOffsetNew[w.Name]
+}
+
 func (w *Weapon) GetOffset() RecoilOffset {
 	return RecoilOffsets[w.Name]
 }

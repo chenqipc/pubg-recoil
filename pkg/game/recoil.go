@@ -35,7 +35,7 @@ func NewRecoil(playerStats *stats.PlayerStats) *Recoil {
 func (r *Recoil) Start() {
 	for {
 		if r.playerStats.ReadyRecoil() {
-			r.StartFire()
+			r.StartFireNew()
 		} else {
 			r.StopFire()
 			time.Sleep(10 * time.Millisecond)
@@ -57,13 +57,34 @@ func (r *Recoil) GetIndex(weapon *weapon.Weapon) float64 {
 	return cIndex
 }
 
+func (r *Recoil) StartFireNew() {
+	if r.count >= 40 {
+		r.StopFire()
+		return
+	}
+
+	activeWeapon, _ := r.playerStats.GetActiveWeapon()
+	offset := activeWeapon.GetOffsetNew()
+
+	currentIndex := r.count
+
+	scopeFactor := float32(1.0)
+
+	fDistance := offset.DelayArr[currentIndex] * scopeFactor
+
+	r.procMouse.Move(0, fDistance)
+
+	r.count++
+	time.Sleep(time.Duration(offset.Interval) * time.Millisecond)
+}
+
 func (r *Recoil) StartFire() {
-	weapon, _ := r.playerStats.GetActiveWeapon()
+	activeWeapon, _ := r.playerStats.GetActiveWeapon()
 	var x float64
 	pos := 0
-	offset := weapon.GetOffset()
+	offset := activeWeapon.GetOffset()
 
-	currentIndex := r.GetIndex(weapon)
+	currentIndex := r.GetIndex(activeWeapon)
 
 	if r.ostatokX >= 1 {
 		pos = 1
@@ -73,7 +94,7 @@ func (r *Recoil) StartFire() {
 
 	scopeFactor := 1.0 // Update soon
 
-	x = (currentIndex*r.multiplyIdeal/r.factor)*scopeFactor/weapon.GetGripFactor()/weapon.GetMuzzleFactor()/r.playerStats.GetStandFactor() + float64(pos)
+	x = (currentIndex*r.multiplyIdeal/r.factor)*scopeFactor/activeWeapon.GetGripFactor()/activeWeapon.GetMuzzleFactor()/r.playerStats.GetStandFactor() + float64(pos)
 	r.ms += offset.Interval
 
 	if r.ostatokX >= 1 {
