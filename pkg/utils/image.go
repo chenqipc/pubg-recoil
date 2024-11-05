@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
+	"image/png"
+	"os"
 
 	"github.com/nfnt/resize"
 	"github.com/oliamb/cutter"
@@ -33,4 +36,20 @@ func ImageToGrayScale(img image.Image) *image.Gray {
 
 func ImageResize(img image.Image, scale int) image.Image {
 	return resize.Resize(uint(img.Bounds().Dx()*scale), uint(img.Bounds().Dy()*scale), img, resize.Lanczos3)
+}
+
+// SaveImageToFile 保存图像到本地文件的辅助函数
+func SaveImageToFile(img image.Image, fileName string) error {
+	file, err := os.Create(fileName)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %v", err)
+	}
+	defer file.Close()
+
+	err = png.Encode(file, img)
+	if err != nil {
+		return fmt.Errorf("failed to encode image: %v", err)
+	}
+
+	return nil
 }

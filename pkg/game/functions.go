@@ -1,6 +1,9 @@
 package game
 
 import (
+	"fmt"
+	"github.com/google/uuid"
+	"github.com/zsmartex/pkg/v2/log"
 	"image"
 	"strings"
 
@@ -95,6 +98,14 @@ func (g *Game) getWeapon(img image.Image) (*weapon.Weapon, error) {
 		return nil, err
 	}
 
+	//TODO del
+	filename := fmt.Sprintf("%s.png", uuid.New())
+	err = utils.SaveImageToFile(imgName, filename)
+	if err != nil {
+		log.Error("保存weapon失败")
+		return nil, err
+	}
+
 	weaponName, err := g.getWeaponName(imgName)
 	if err != nil {
 		return nil, err
@@ -105,12 +116,12 @@ func (g *Game) getWeapon(img image.Image) (*weapon.Weapon, error) {
 	}
 
 	var grip weapon.Grip
-	for gripName, assets := range assets.GripAssets {
+	for gripName, assetPaths := range assets.GripAssets {
 		if len(grip) > 0 {
 			break
 		}
 
-		for _, filepath := range assets {
+		for _, filepath := range assetPaths {
 			template := gocv.IMRead(filepath, gocv.IMReadGrayScale)
 			match, err := utils.MatchImage(img, template)
 			if err != nil {
@@ -125,12 +136,12 @@ func (g *Game) getWeapon(img image.Image) (*weapon.Weapon, error) {
 	}
 
 	var muzzle weapon.Muzzle
-	for muzzleName, assets := range assets.MuzzleAssets {
+	for muzzleName, assetPaths := range assets.MuzzleAssets {
 		if len(muzzle) > 0 {
 			break
 		}
 
-		for _, filepath := range assets {
+		for _, filepath := range assetPaths {
 			template := gocv.IMRead(filepath, gocv.IMReadGrayScale)
 			match, err := utils.MatchImage(img, template)
 			if err != nil {

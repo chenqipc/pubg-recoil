@@ -1,10 +1,7 @@
 package game
 
 import (
-	"fmt"
 	"image"
-	"image/png"
-	"os"
 	"time"
 
 	"github.com/huuhait/pubg-recoil/pkg/gui"
@@ -81,21 +78,6 @@ func (g *Game) ScanInventory() {
 			continue
 		}
 
-		// 创建文件
-		file, err := os.Create("screenshot.png")
-		if err != nil {
-			fmt.Println("Error creating file:", err)
-			return
-		}
-		defer file.Close()
-
-		// 将图像编码为PNG并写入文件
-		err = png.Encode(file, screenshot)
-		if err != nil {
-			fmt.Println("Error encoding PNG:", err)
-			return
-		}
-
 		isInventoryOpening, err := g.isInventoryOpening(screenshot)
 		if err != nil {
 			log.Errorf("failed to scan inventory: %v", err)
@@ -104,11 +86,9 @@ func (g *Game) ScanInventory() {
 		}
 
 		if !isInventoryOpening {
-			log.Info("没有匹配到")
 			g.scanning = false
 			continue
 		}
-		log.Info("匹配到", isInventoryOpening)
 
 		weapons, err := g.getWeapons(screenshot)
 		if err != nil {
@@ -128,32 +108,47 @@ func (g *Game) ScanInventory() {
 	}
 }
 
+// 全局变量用于存储Ctrl按键的状态
+var ctrlPressed = false
+
 func (g *Game) DeviceHook() {
 	hook.Register(hook.KeyDown, []string{"tab"}, func(e hook.Event) {
-		log.Info("开始扫描")
 		g.scanning = true
 	})
 
+	// 监听Ctrl按键按下和松开
+	hook.Register(hook.KeyDown, []string{"ctrl"}, func(e hook.Event) {
+		ctrlPressed = true
+	})
+	hook.Register(hook.KeyUp, []string{"ctrl"}, func(e hook.Event) {
+		ctrlPressed = false
+	})
+
 	hook.Register(hook.KeyDown, []string{"1"}, func(e hook.Event) {
+		// 如果Ctrl键已按下，则跳过该事件
+		if ctrlPressed {
+			return
+		}
 		g.playerStats.SetActiveWeapon(1)
 		currentActiveWeapon, _ := g.playerStats.GetActiveWeapon()
 		g.GUI.SetActiveWeapon(currentActiveWeapon)
 	})
 
 	hook.Register(hook.KeyDown, []string{"2"}, func(e hook.Event) {
+		// 如果Ctrl键已按下，则跳过该事件
+		if ctrlPressed {
+			return
+		}
 		g.playerStats.SetActiveWeapon(2)
 		currentActiveWeapon, _ := g.playerStats.GetActiveWeapon()
 		g.GUI.SetActiveWeapon(currentActiveWeapon)
 	})
 
 	hook.Register(hook.KeyDown, []string{"c"}, func(e hook.Event) {
-		log.Info("c")
 		cStats := g.playerStats.GetStandState()
-		log.Info("原状态", cStats)
 		newStats := stats.StandStateSit
 		if cStats == stats.StandStateStand || cStats == stats.StandStateLie {
 			newStats = stats.StandStateSit
-			log.Info("新状态", newStats)
 		} else if cStats == stats.StandStateSit {
 			newStats = stats.StandStateStand
 		}
@@ -162,7 +157,6 @@ func (g *Game) DeviceHook() {
 	})
 
 	hook.Register(hook.KeyDown, []string{"z"}, func(e hook.Event) {
-		log.Info("z")
 		cStats := g.playerStats.GetStandState()
 		var newStats stats.StandState
 		if cStats == stats.StandStateStand || cStats == stats.StandStateSit {
@@ -171,13 +165,13 @@ func (g *Game) DeviceHook() {
 			newStats = stats.StandStateStand
 		}
 		g.playerStats.SetStandState(newStats)
-		//g.GUI.SetStandState(newStats)
+		g.GUI.SetStandState(newStats)
 	})
 
 	hook.Register(hook.KeyDown, []string{"space"}, func(e hook.Event) {
 		log.Info("空格")
 		g.playerStats.SetStandState(stats.StandStateStand)
-		//g.GUI.SetStandState(stats.StandStateStand)
+		g.GUI.SetStandState(stats.StandStateStand)
 	})
 
 	hook.Register(hook.MouseHold, []string{}, func(e hook.Event) {

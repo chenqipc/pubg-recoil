@@ -2,7 +2,5 @@ data
 *.exe
 .vscode
 dist
-/.idea/modules.xml
-/.idea/pubg-recoil.iml
-/.idea/vcs.xml
+/.idea/*
 /screenshot.png
